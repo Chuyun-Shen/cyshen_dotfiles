@@ -58,4 +58,3 @@ setopt HIST_IGNORE_SPACE    # 以空格开头的命令不入历史
 
 
 alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'

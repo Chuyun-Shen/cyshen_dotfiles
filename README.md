@@ -1,321 +1,324 @@
-## 快速开始
+# `.zshrc` 自用版本
+风格和原生的比较相似，但是做了很多基础功能，实用且好用。
+这份文档带你从 **安装 Zsh**、**从 Bash 切换到 Zsh**、**安装必要插件与工具**、**应用本仓库的 `.zshrc` 配置**，到最后用 **`config` 裸仓库** 同步你的 dotfiles（包含 **Fork 流程** 与日常 **pull/push 同步**）。
 
-1. **确认/切换到 Zsh**
+---
+
+## 1. 安装 Zsh 与必要工具
+
+### 1.1 安装 Zsh
+
+* **macOS（Homebrew）**
+
+  ```bash
+  brew install zsh
+  ```
+* **Debian / Ubuntu**
+
+  ```bash
+  sudo apt update
+  sudo apt install zsh
+  ```
+* **Arch / Manjaro**
+
+  ```bash
+  sudo pacman -S zsh
+  ```
+* **Fedora**
+
+  ```bash
+  sudo dnf install zsh
+  ```
+
+### 1.2 安装可选增强工具（建议）
+
+* `fzf`（模糊查找/历史搜索增强）
+* `git`（用于管理 dotfiles）
+* **macOS 额外建议**：`coreutils`（提供 `gls`，以支持 GNU 风格的 `ls --color`）
+
+示例：
 
 ```bash
-echo $SHELL        # 期望输出类似 /bin/zsh
-chsh -s $(which zsh)   # 如果你现在还是 bash，切到 zsh（重登或重启终端生效）
-```
+# macOS
+brew install fzf git coreutils
+# 安装 fzf 的按键/补全（按提示操作）
+"$(brew --prefix)"/opt/fzf/install
 
-2. **安装可选依赖（推荐）**
-
-* fzf（交互式模糊搜索/补全）
-* zsh-syntax-highlighting（语法高亮）
-* zsh-autosuggestions（历史建议）
-
-常见安装方式：
-
-```bash
-# macOS（Homebrew）
-brew install zsh fzf
-brew install zsh-syntax-highlighting zsh-autosuggestions
-
-# Debian/Ubuntu
-sudo apt update
-sudo apt install zsh fzf git
+# Debian / Ubuntu
+sudo apt install fzf git
 
 # Arch
-sudo pacman -S zsh fzf git
-```
-
-> `zsh-syntax-highlighting` 与 `zsh-autosuggestions` 多通过 git 克隆到本地（见下文“插件放置”）。
-
-3. **把本文的 `.zshrc` 内容放到 `~/.zshrc`**，按你的环境做两处检查：
-
-* **Conda 路径**：默认写的是 `/home/chuyun/miniconda3`，请改成你的实际安装路径，或使用“通用写法（不改路径）”那段代码。
-* **插件路径**：确保 `~/.zsh/plugins/...` 里真的有对应插件目录。
-
-4. **重新加载**
-
-```bash
-exec zsh    # 或者：source ~/.zshrc
+sudo pacman -S fzf git
 ```
 
 ---
 
-## 插件放置（推荐目录结构）
+## 2. 从 Bash 切换到 Zsh
 
-```text
-~/.zsh/
-└── plugins/
-    ├── zsh-syntax-highlighting/
-    │   └── zsh-syntax-highlighting.zsh
-    └── zsh-autosuggestions/
-        └── zsh-autosuggestions.zsh
+1. 查看当前 Shell：
+
+```bash
+echo $SHELL
 ```
 
-安装示例：
+2. 切换默认登录 Shell 为 Zsh：
+
+```bash
+chsh -s "$(which zsh)"
+```
+
+> 注：切换后**重新登录**或**重启终端**生效。也可临时输入 `zsh` 进入 Zsh 会话。
+
+---
+
+## 3. 安装 Zsh 插件（本配置使用）
+
+我们使用三个插件：
+
+* `zsh-syntax-highlighting`（命令语法高亮）
+* `zsh-autosuggestions`（基于历史的自动建议）
+* `zsh-history-substring-search`（↑/↓ 依据“输入子串”在历史中搜索匹配）
+
+建议把插件放在 `~/.zsh/plugins/` 下：
 
 ```bash
 mkdir -p ~/.zsh/plugins
-git clone https://github.com/zsh-users/zsh-syntax-highlighting ~/.zsh/plugins/zsh-syntax-highlighting
-git clone https://github.com/zsh-users/zsh-autosuggestions ~/.zsh/plugins/zsh-autosuggestions
+
+git clone https://github.com/zsh-users/zsh-syntax-highlighting \
+  ~/.zsh/plugins/zsh-syntax-highlighting
+
+git clone https://github.com/zsh-users/zsh-autosuggestions \
+  ~/.zsh/plugins/zsh-autosuggestions
+
+git clone https://github.com/zsh-users/zsh-history-substring-search \
+  ~/.zsh/plugins/zsh-history-substring-search
 ```
 
 ---
 
-## 配置详解（逐段说明）
+## 4. 应用本仓库的 `.zshrc`
 
-### 1) 彩色提示符（Prompt）
+1. **备份**你现有的 `.zshrc`（如有）：
 
-```zsh
-autoload -Uz colors && colors
-PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
-# 下面还有一段“粗体”的覆盖版本（会覆盖上面这行）
-autoload -Uz colors && colors
-PROMPT='%B%F{green}%n@%m%b%f:%B%F{blue}%~%b%f$ '
+```bash
+[ -f ~/.zshrc ] && cp ~/.zshrc ~/.zshrc.bak.$(date +%Y%m%d%H%M%S)
 ```
 
-* 显示为：**绿色**的 `user@host` + **蓝色**的当前目录。
-* `%#` / `$`：root 时显示 `#`，普通用户显示 `$`。
-* **注意**：你现在有两段 `PROMPT`，**后面的会覆盖前面**。保留**其一**即可：
+2. 将仓库中的 `.zshrc` 放到 `~/.zshrc`（直接复制粘贴或 `cp`）。
 
-  * 想要**粗体**版本 → 留后面；
-  * 想要**非粗体**版本 → 留前面并删掉后面两行。
+3. 重新加载：
 
-### 2) 彩色 `ls/grep`
-
-```zsh
-if command -v dircolors >/dev/null 2>&1; then
-  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-fi
-
-alias ls='ls --color=auto'
-alias ll='ls -lh --group-directories-first --color=auto'
-alias la='ls -A --color=auto'
-alias lla='ls -alh --group-directories-first --color=auto'
-
-alias grep='grep --color=auto'
-egrep='egrep --color=auto'
-fgrep='fgrep --color=auto'
+```bash
+exec zsh
+# 或：source ~/.zshrc
 ```
 
-* Linux 下默认 OK。
-* **macOS 提示**：mac 自带 `ls` 为 BSD 版，没有 `--color` / `--group-directories-first`。
-  解决办法：
+> **功能点提示**
+>
+> * 提示符：绿色 `user@host` + 蓝色当前目录（有普通版和粗体覆盖版）。
+> * 彩色 `ls/grep`：Linux 直接可用；macOS 建议安装 `coreutils` 用 `gls`。
+> * `fzf`：若已安装，会自动注入 Ctrl-R/Alt-C/Ctrl-T 等增强。
+> * 插件：已启用语法高亮、自动建议和**子串历史搜索**（输入任意片段后按 `↑/↓` 在历史里跳）。
+> * Conda：使用 `$HOME/miniconda3` 的通用初始化逻辑，并设置 `CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1`。
+> * 历史：20k 条，去重与共享历史已开启。
+> * `config`：dotfiles 裸仓库便捷别名。
 
-  ```bash
-  brew install coreutils
-  alias ls='gls --color=auto'
-  alias ll='gls -lh --group-directories-first --color=auto'
-  alias la='gls -A --color=auto'
-  alias lla='gls -alh --group-directories-first --color=auto'
+---
+
+## 5. 用 `config` 裸仓库同步到 GitHub
+
+### 5.1 目标与术语
+
+* **目标**：用一个隐藏的裸仓库（`~/.dotfiles`）管理 `$HOME` 下受控文件（如 `~/.zshrc`），工作区就是 `$HOME` 本身。
+* **命令别名**：本仓库的 `.zshrc` 里已定义
+
+  ```zsh
+  alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
   ```
 
-### 3) `fzf` 交互式补全（可选）
+### 5.2 首次 Fork & 初始化（你是使用他人的 dotfiles 仓库时）
 
-```zsh
-if command -v fzf >/dev/null 2>&1; then
-  source <(fzf --zsh)
-fi
+1. **在 GitHub 上 Fork** 原始仓库到你自己的账户（例如得到 `git@github.com:<你>/dotfiles.git`）。
+
+2. **在本机初始化裸仓库并忽略敏感/庞大文件**：
+
+```bash
+git init --bare "$HOME/.dotfiles"
+config config --local status.showUntrackedFiles no
+
+# 建议的全局忽略（按需增减）
+cat > ~/.gitignore <<'EOF'
+.zsh_history
+.ssh/
+.cache/
+.local/
+.miniconda3/
+.conda/
+.DS_Store
+node_modules/
+EOF
+config add ~/.gitignore
+config commit -m "chore: add global ignore"
 ```
 
-* 检测到装了 `fzf` 就启用补全/小部件，没装则跳过。
+3. **连接远端（origin 指向你自己的 Fork）并拉取**
 
-### 4) 语法高亮 & 自动建议（可选）
+```bash
+config remote add origin git@github.com:<你的用户名>/dotfiles.git
+# 或 HTTPS：
+# config remote add origin https://github.com/<你的用户名>/dotfiles.git
 
-```zsh
-source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-ZSH_AUTOSUGGEST_STRATEGY=(history)
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
+# 如果远端已有内容（常见），先把远端取回并在 $HOME 工作区检出
+config fetch origin
+config checkout -f main 2>/dev/null || config checkout -f master
 ```
 
-* **加载顺序**：建议**先** highlighing，**再** autosuggestions，符合你的配置。
-* 建议样式：建议文字为灰色（`fg=8`）。
+4. **（可选）绑定 upstream**（指向原始仓库，方便后续同步上游更新）
 
-### 5) Conda 支持 & OpenSSL 警告处理
+```bash
+config remote add upstream git@github.com:<原始作者>/dotfiles.git
+# 或 HTTPS：
+# config remote add upstream https://github.com/<原始作者>/dotfiles.git
+```
 
-当前写法（**需把路径改成你的 Miniconda/Anaconda 安装目录**）：
+> 之后你就可以用 `config` 在 `$HOME` 直接增删改文件并提交推送了。
+
+### 5.3 已有本地修改时的安全同步（日常工作流）
+
+**查看状态与差异**
+
+```bash
+config status
+config diff
+```
+
+**从远端拉取（推荐 rebase 方式，保持历史整洁）**
+
+```bash
+# 建议设置默认行为：
+config config pull.rebase true
+config config rebase.autoStash true
+
+# 拉取（如果默认没设好，也可以手动）：
+config pull --rebase origin main   # 或 master
+```
+
+**有本地未提交改动时（更稳妥的做法）**
+
+```bash
+config stash push -u -m "pre-pull"
+config pull --rebase origin main   # 或 master
+config stash pop                   # 可能出现冲突，按提示解决
+```
+
+**解决冲突**
+
+1. 打开有冲突的文件（例如 `~/.zshrc`），手动删除 `<<<<<<<`, `=======`, `>>>>>>>` 标记并合并内容。
+2. 标记解决并继续：
+
+   ```bash
+   config add ~/.zshrc
+   config rebase --continue    # 如果当前处于 rebase 流程
+   ```
+
+   如果是 `stash pop` 造成冲突，解决后：
+
+   ```bash
+   config add ~/.zshrc
+   config commit -m "Resolve conflicts after stash pop"
+   ```
+
+**提交与推送**
+
+```bash
+config add ~/.zshrc
+config commit -m "Update .zshrc"
+config push
+```
+
+### 5.4 同步上游（upstream）更新到你的 Fork（可选）
+
+当上游仓库有更新时：
+
+```bash
+config fetch upstream
+config checkout main            # 或 master
+config rebase upstream/main     # 或 upstream/master
+config push origin main         # 将合并后的结果推回你的 Fork
+```
+
+### 5.5 常见问题
+
+* **“refusing to merge unrelated histories”**
+  远端不是空仓库且历史不一致：
+
+  ```bash
+  config pull origin main --allow-unrelated-histories
+  ```
+
+  解决冲突后再 `config push`。
+
+* **SSH 推送失败**：配置公钥。
+
+  ```bash
+  ssh-keygen -t ed25519 -C "<你的邮箱>"
+  cat ~/.ssh/id_ed25519.pub  # 复制到 GitHub > Settings > SSH and GPG keys
+  ssh -T git@github.com      # 测试
+  ```
+
+* **不想跟踪某些文件/目录**：加入 `~/.gitignore`，然后：
+
+  ```bash
+  config rm --cached <文件/目录> -r
+  config commit -m "chore: update ignore"
+  ```
+
+---
+
+## 6. Conda 初始化说明（与本 `.zshrc` 配置匹配）
+
+本 `.zshrc` 使用如下逻辑（通用，优先 `$HOME/miniconda3`）：
 
 ```zsh
-__conda_setup="$('/home/chuyun/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
+__conda_setup="$('$HOME/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
   eval "$__conda_setup"
 else
-  if [ -f "/home/chuyun/miniconda3/etc/profile.d/conda.sh" ]; then
-    . "/home/chuyun/miniconda3/etc/profile.d/conda.sh"
+  if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+    . "$HOME/miniconda3/etc/profile.d/conda.sh"
   else
     export PATH="/home/chuyun/miniconda3/bin:$PATH"
   fi
 fi
 unset __conda_setup
-
 export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
 ```
 
-更**通用**的写法（不依赖硬编码路径，推荐）：
-
-```zsh
-if command -v conda >/dev/null 2>&1; then
-  eval "$(conda shell.zsh hook)"
-elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
-  . "$HOME/miniconda3/etc/profile.d/conda.sh"
-fi
-export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
-```
-
-> 也可以直接运行一次 `conda init zsh`，让 Conda 自己写入合适的初始化代码。
-
-### 6) 历史记录优化
-
-```zsh
-HISTFILE=~/.zsh_history
-HISTSIZE=20000
-SAVEHIST=20000
-
-setopt APPEND_HISTORY       # 追加模式
-setopt SHARE_HISTORY        # 多终端共享
-setopt HIST_IGNORE_ALL_DUPS # 不保存重复
-setopt HIST_FIND_NO_DUPS    # 搜索不重复
-setopt HIST_IGNORE_SPACE    # 以空格开头的不入史
-```
-
-### 7) dotfiles 快捷命令
-
-```zsh
-alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-```
-
-* 用于管理“裸仓库”式 dotfiles。
-* 初次配置参考：
-
-  ```bash
-  git init --bare $HOME/.dotfiles
-  alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-  config config --local status.showUntrackedFiles no
-  ```
+> 如果你的 Conda 路径不同，请自行调整；或执行一次 `conda init zsh` 让 Conda 写入官方初始化片段。
 
 ---
 
-## Bash 用户需要知道的事
+## 7. 功能速览与快捷键
 
-* 这份配置是 **Zsh** 的。若你现在在 **Bash**：
+* **子串历史搜索**：输入任意片段（如 `ls -a`）→ 按 `↑/↓` 在历史中按**包含该片段**搜索并跳转。
+* **自动建议**（灰色提示）：基于历史，`→` 或 `End` 可接受建议（终端配置不同略有差别）。
+* **`fzf` 常用**：
 
-  ```bash
-  chsh -s $(which zsh)   # 切换默认 shell 为 zsh（登出/重启终端后生效）
-  ```
-* 想临时试用：直接运行 `zsh` 进入一个会话，不改变系统默认 shell。
-
----
-
-## 常见问题（FAQ）
-
-**Q1：提示 `no such file or directory: .../zsh-syntax-highlighting.zsh`？**
-A：没有安装或路径不对。按“插件放置”一节克隆到 `~/.zsh/plugins/...`，或把 `source` 路径改成你实际目录。
-
-**Q2：`ls: illegal option -- -`（macOS）？**
-A：使用 BSD `ls` 导致。参考上文“彩色 ls/grep”里的 **macOS 解决方案**（安装 coreutils 并用 `gls`）。
-
-**Q3：Conda 没生效或路径不对？**
-A：优先使用“**通用写法**”，或执行 `conda init zsh`，然后重新打开终端。
-
-**Q4：`fzf` 没有补全？**
-A：确认 `fzf` 已安装；并且你的终端为 zsh。运行 `command -v fzf` 应有路径输出。
-
-**Q5：两个 PROMPT 冲突？**
-A：确实。**保留一个**即可；后写的会覆盖先写的。
+  * `Ctrl-R`：模糊搜索历史命令
+  * `Ctrl-T`：模糊选文件插入命令行
+  * `Alt-C`：模糊选目录并 `cd`
 
 ---
 
-## 进阶自定义
+## 8. 一键安装插件（可选附录）
 
-* **把主机名隐藏**（更简洁）：
-
-  ```zsh
-  PROMPT='%F{green}%n%f:%F{blue}%~%f %# '
-  ```
-* **在 git 目录显示分支**（需要 `vcs_info` 或 oh-my-zsh / powerlevel10k 等主题）：
-
-  ```zsh
-  autoload -Uz vcs_info
-  precmd() { vcs_info }
-  setopt prompt_subst
-  PROMPT='%F{green}%n@%m%f:%F{blue}%~%f ${vcs_info_msg_0_}%# '
-  zstyle ':vcs_info:git:*' formats '(%b)'
-  ```
-
----
-
-## 兼容性提示
-
-* Linux 下选项基本即插即用。
-* macOS 需要注意 **coreutils**（`gls`）与 Homebrew 安装插件的路径差异。
-* 远程服务器可能没有图形字体支持，提示符中的颜色代码是纯终端 ANSI，不受影响。
-
----
-
-## 复制用的模板（按需取舍）
-
-> **建议：** 在你的 `.zshrc` 中只保留**一个** `PROMPT` 片段，并选择**通用 Conda 初始化**写法。
-
-```zsh
-# ========== Colors & Prompt ==========
-autoload -Uz colors && colors
-# 选 1：普通
-# PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
-# 选 2：粗体（推荐外观）
-PROMPT='%B%F{green}%n@%m%b%f:%B%F{blue}%~%b%f$ '
-
-# ========== GNU colors for ls/grep ==========
-if command -v dircolors >/dev/null 2>&1; then
-  test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
-fi
-alias ls='ls --color=auto'
-alias ll='ls -lh --group-directories-first --color=auto'
-alias la='ls -A --color=auto'
-alias lla='ls -alh --group-directories-first --color=auto'
-alias grep='grep --color=auto'
-egrep='egrep --color=auto'
-fgrep='fgrep --color=auto'
-
-# macOS（BSD ls）可改用：
-# alias ls='gls --color=auto'
-# alias ll='gls -lh --group-directories-first --color=auto'
-# alias la='gls -A --color=auto'
-# alias lla='gls -alh --group-directories-first --color=auto'
-
-# ========== fzf（可选） ==========
-if command -v fzf >/dev/null 2>&1; then
-  source <(fzf --zsh)
-fi
-
-# ========== Syntax Highlighting & Autosuggestions（可选） ==========
-[ -f ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh ] && \
-  source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-
-[ -f ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh ] && \
-  source ~/.zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-
-ZSH_AUTOSUGGEST_STRATEGY=(history)
-ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
-
-# ========== Conda（通用写法，推荐） ==========
-if command -v conda >/dev/null 2>&1; then
-  eval "$(conda shell.zsh hook)"
-elif [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
-  . "$HOME/miniconda3/etc/profile.d/conda.sh"
-fi
-export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
-
-# ========== History ==========
-HISTFILE=~/.zsh_history
-HISTSIZE=20000
-SAVEHIST=20000
-setopt APPEND_HISTORY SHARE_HISTORY HIST_IGNORE_ALL_DUPS HIST_FIND_NO_DUPS HIST_IGNORE_SPACE
-
-# ========== Dotfiles bare repo helper ==========
-alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+```bash
+mkdir -p ~/.zsh/plugins
+for repo in zsh-syntax-highlighting zsh-autosuggestions zsh-history-substring-search; do
+  url=https://github.com/zsh-users/$repo
+  dest="$HOME/.zsh/plugins/$repo"
+  [ -d "$dest" ] || git clone "$url" "$dest"
+done
+echo "Plugins installed under ~/.zsh/plugins"
 ```
 

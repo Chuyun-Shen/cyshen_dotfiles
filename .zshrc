@@ -75,8 +75,3 @@ setopt HIST_IGNORE_SPACE    # 以空格开头的命令不入历史
 
 ##### ========== 你的别名（保持） ==========
 alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-
-<<<<<<< HEAD
-alias config='git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
-=======
->>>>>>> 24af75e (Update .zshrc: add history-substring-search + keybindings)

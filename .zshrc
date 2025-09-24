@@ -20,11 +20,7 @@ if command -v fzf >/dev/null 2>&1; then
   source <(fzf --zsh)
 fi
 
-##### ========== 插件加载（保持你原有的两插件 + 新增子串历史搜索） ==========
-# 你原来的顺序是“先 highlighting 再 autosuggestions”
-# 为了不改变你现有体验，这里先按你的顺序加载，再加载子串历史搜索插件与按键绑定。
-# （如遇到冲突，可把 syntax-highlighting 放到最后再试）
-
+##### ========== 插件 ==========
 # 语法高亮
 source ~/.zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 
@@ -43,7 +39,7 @@ if [ -f ~/.zsh/plugins/zsh-history-substring-search/zsh-history-substring-search
   bindkey '\eOB' history-substring-search-down
 fi
 
-##### ========== Conda 激活 & OpenSSL 警告处理（保持你的写法） ==========
+##### ========== Conda 激活 & OpenSSL 警告处理==========
 __conda_setup="$('$HOME/miniconda3/bin/conda' 'shell.zsh' 'hook' 2> /dev/null)"
 if [ $? -eq 0 ]; then
   eval "$__conda_setup"
@@ -58,11 +54,11 @@ unset __conda_setup
 
 export CRYPTOGRAPHY_OPENSSL_NO_LEGACY=1
 
-##### ========== Bash 风格的粗体彩色提示符（覆盖主题，保持你原来的覆盖行为） ==========
+##### ========== Bash 风格的粗体彩色提示符 ==========
 autoload -Uz colors && colors
 PROMPT='%B%F{green}%n@%m%b%f:%B%F{blue}%~%b%f$ '
 
-##### ========== 历史配置（保持你的原始设置） ==========
+##### ========== 历史配置 ==========
 HISTFILE=~/.zsh_history     # 历史文件路径
 HISTSIZE=20000              # 内存里最多保存多少条历史
 SAVEHIST=20000              # 写入文件多少条历史
